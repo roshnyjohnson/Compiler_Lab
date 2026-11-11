@@ -1,75 +1,76 @@
 #include <stdio.h>
 #include <string.h>
 
+char s[100];
+int pos = 0, t = 1;
+
+void expr(char *res);
+
+void factor(char *res)
+{
+    if (s[pos] == '(')
+    {
+        pos++;
+        expr(res);
+        pos++;
+    }
+    else
+    {
+        sprintf(res, "%c", s[pos++]);
+    }
+}
+
+void term(char *res)
+{
+    char l[10], r[10], op;
+
+    factor(l);
+
+    while (s[pos] == '*' || s[pos] == '/')
+    {
+        op = s[pos++];
+        factor(r);
+
+        printf("t%d = %s %c %s\n", t, l, op, r);
+        sprintf(l, "t%d", t++);
+    }
+
+    strcpy(res, l);
+}
+
+void expr(char *res)
+{
+    char l[10], r[10], op;
+
+    term(l);
+
+    while (s[pos] == '+' || s[pos] == '-')
+    {
+        op = s[pos++];
+        term(r);
+
+        printf("t%d = %s %c %s\n", t, l, op, r);
+        sprintf(l, "t%d", t++);
+    }
+
+    strcpy(res, l);
+}
+
 int main()
 {
-    char exp[50], temp = '1';
-    int i, j;
+    char result[10], variable;
 
-    printf("Enter an expression: ");
-    scanf("%49s", exp);
+    printf("Enter expression: ");
+    scanf("%99s", s);
 
-    printf("\nIntermediate Code:\n");
+    printf("\nThree-address code:\n");
 
-    /* Handle * and / first */
-    i = 0;
-    while (exp[i] != '\0')
-    {
-        if (exp[i] == '*' || exp[i] == '/')
-        {
-            printf("t%c = %c %c %c\n",
-                   temp, exp[i-1], exp[i], exp[i+1]);
+    variable = s[pos++];  // Read variable
+    pos++;                // Skip '='
 
-            exp[i-1] = temp;
+    expr(result);         // Generate code for RHS
 
-            /* Remove operator and right operand */
-            j = i;
-            while (exp[j+2] != '\0')
-            {
-                exp[j] = exp[j+2];
-                j++;
-            }
-            exp[j] = '\0';
-
-            temp++;
-            i = 0;
-        }
-        else
-        {
-            i++;
-        }
-    }
-
-    /* Handle + and - */
-    i = 0;
-    while (exp[i] != '\0')
-    {
-        if (exp[i] == '+' || exp[i] == '-')
-        {
-            printf("t%c = %c %c %c\n",
-                   temp, exp[i-1], exp[i], exp[i+1]);
-
-            exp[i-1] = temp;
-
-            /* Remove operator and right operand */
-            j = i;
-            while (exp[j+2] != '\0')
-            {
-                exp[j] = exp[j+2];
-                j++;
-            }
-            exp[j] = '\0';
-
-            temp++;
-            i = 0;
-        }
-        else
-        {
-            i++;
-        }
-    }
-
-    printf("Result = t%c\n", exp[0]);
+    printf("%c = %s\n", variable, result);
 
     return 0;
 }
